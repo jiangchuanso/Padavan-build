@@ -49,6 +49,21 @@ jobs:
         exit 1
         fi
         cp -f configs/templates/$TNAME.config .config
+        # 这份源码树固定是 linux-3.4.x（3.4.113）+ toolchain-3.4.x，先断言再编，
+        # 免得换 TNAME / 换源后编到一半才炸在一个看不懂的地方
+        KDIR=$(sed -n 's/^CONFIG_LINUXDIR=//p' .config)
+        if [ "$KDIR" != "linux-3.4.x" ] ; then
+        echo "expected CONFIG_LINUXDIR=linux-3.4.x, got '${KDIR}' "
+        exit 1
+        fi
+        if [ ! -d "$KDIR" ] ; then
+        echo "kernel source dir $KDIR not found "
+        exit 1
+        fi
+        if [ ! -x ../toolchain-mipsel/toolchain-3.4.x/bin/mipsel-linux-uclibc-gcc ] ; then
+        echo "toolchain-3.4.x cross compiler not found "
+        exit 1
+        fi
         sed -i 's/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=n/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=y/g' .config
         ################################################################################################
         #因不同型号配置功能不一样，所以先把配置项删除，如果你自己要添加其他的，也要写上删除这一条，切记！！！
