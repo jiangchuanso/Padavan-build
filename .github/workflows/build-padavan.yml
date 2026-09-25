@@ -19,6 +19,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
     env:
       TNAME: ${{ github.event.inputs.TNAME || 'CR660x' }}
 
@@ -47,14 +49,14 @@ jobs:
         # 该补丁仅把 DESTDIR 默认行注释掉（@DESTDIR@ 本就为空，功能等价），
         # 这里用匹配镜像当前内容的补丁覆盖它。
         cat > ncurses-6.4.patch <<'PATCH_EOF'
---- a/misc/run_tic.in
-+++ b/misc/run_tic.in
-@@ -45,3 +45,3 @@
- : "${suffix:=@EXEEXT@}"
--: "${DESTDIR:=@DESTDIR@}"
-+# : "${DESTDIR:=@DESTDIR@}"
- : "${prefix:=@prefix@}"
-PATCH_EOF
+        --- a/misc/run_tic.in
+        +++ b/misc/run_tic.in
+        @@ -45,3 +45,3 @@
+         : "${suffix:=@EXEEXT@}"
+        -: "${DESTDIR:=@DESTDIR@}"
+        +# : "${DESTDIR:=@DESTDIR@}"
+         : "${prefix:=@prefix@}"
+        PATCH_EOF
     - name: Build Firmware
       run: |
         cd /opt/rt-n56u/trunk
@@ -121,3 +123,11 @@ PATCH_EOF
       with:
         name: Padavan-packages
         path: /opt/images
+    - name: Publish firmware to Release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        name: ${{ github.ref_name }}
+        files: /opt/images/*.trx
+        draft: false
+        prerelease: false
