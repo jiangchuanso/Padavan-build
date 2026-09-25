@@ -39,6 +39,22 @@ jobs:
         cd /opt/rt-n56u/toolchain-mipsel
         sh dl_toolchain.sh
         mkdir -p /opt/images/
+    - name: Fix ncurses patch (github mirror mismatch)
+      run: |
+        cd /opt/rt-n56u/trunk/libs/libncurses
+        # github 镜像 v6.4 的 misc/run_tic.in 给 ${...} 加了双引号，
+        # 而上游自带补丁是基于未加引号的官方源码生成的，hunk 失败导致构建中断。
+        # 该补丁仅把 DESTDIR 默认行注释掉（@DESTDIR@ 本就为空，功能等价），
+        # 这里用匹配镜像当前内容的补丁覆盖它。
+        cat > ncurses-6.4.patch <<'PATCH_EOF'
+--- a/misc/run_tic.in
++++ b/misc/run_tic.in
+@@ -45,3 +45,3 @@
+ : "${suffix:=@EXEEXT@}"
+-: "${DESTDIR:=@DESTDIR@}"
++# : "${DESTDIR:=@DESTDIR@}"
+ : "${prefix:=@prefix@}"
+PATCH_EOF
     - name: Build Firmware
       run: |
         cd /opt/rt-n56u/trunk
