@@ -2,13 +2,12 @@
 name: Build Padavan
 
 on:
-  release:
-    types: [published]
+  # 只保留 push 标签作唯一构建入口。原来同时监听 release: published 会导致
+  # 「发布 Release」时既创建标签（push）又发布 Release（release），一次发布跑两遍。
+  # 发布 Release 时 GitHub 会创建标签，同样能触发本构建。
   push:
     tags:
     - 'v*'
-  #  branches:
-  #    - master
   workflow_dispatch:
     inputs:
       TNAME:

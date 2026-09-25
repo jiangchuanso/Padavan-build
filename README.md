@@ -10,10 +10,14 @@
    （例如 `CR660x`、`K2P`、`MI-R3G` 等），默认 `CR660x`。
 4. 点击 **Run workflow** 开始编译。
 
-## 方式二：打 Release / 标签触发
+## 方式二：打 `v*` 标签触发
 
 - **打标签**：`git tag v1.0.0 && git push --tags`，推送 `v*` 格式的标签即触发编译。
-- **发布 Release**：在仓库的 Releases 页面 **Publish a release** 即触发编译。
+- 编译成功后工作流会**自动创建/更新同名 Release**，并把 `.trx` 固件作为 Release 资源上传
+  （见工作流中的 `Publish firmware to Release` 步骤）。
+- **发布 Release**：在仓库的 Releases 页面 **Publish a release** 并**新建一个 `v*` 标签**，
+  同样会触发编译（GitHub 会先创建该标签）。注意：新版本请用新标签，用已存在的标签发布 Release
+  不会再触发编译。
 
 两种方式均使用工作流中默认型号 `CR660x`，如需更换型号请改用方式一手动触发并填写 TNAME，
 或修改工作流里 `env.TNAME` 的默认值。
